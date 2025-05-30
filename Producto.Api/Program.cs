@@ -68,6 +68,14 @@ builder.Services.AddSingleton<IHostedService>(sp =>
     )
 );
 
+builder.Services.AddSingleton<IHostedService>(sp =>
+    new ProductoActualizadoEventConsumer(
+        new RabbitMQEventConsumerConnection(rabbitHost, rabbitUser, rabbitPass), // Se crea aqu?
+        sp.GetRequiredService<IServiceProvider>()
+        // , sp.GetRequiredService<ILogger<ProductoActualizadoEventConsumer>>() // Si usas logger
+    )
+);
+
 
 // Registro de repositorios
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
