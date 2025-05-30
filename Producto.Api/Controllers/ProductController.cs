@@ -73,6 +73,36 @@ namespace Producto.Presentation.Controllers
             }
         }
 
+        [HttpDelete("Eliminar/{id:guid}")] // Ruta: DELETE api/productos/{id}
+        public async Task<IActionResult> DeleteProduct([FromRoute] Guid id)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
+                    return BadRequest(new { message = "El ID del producto proporcionado no es válido." });
+                }
+
+                var command = new DeleteProductCommand(id);
+                await _mediator.Send(command);
+
+                // HTTP 204 No Content es la respuesta estándar para una eliminación exitosa.
+                return NoContent();
+            }
+            catch (KeyNotFoundException knfex) // Captura la excepción si el producto no se encontró
+            {
+                return NotFound(new { message = knfex.Message });
+            }
+            // catch (ProductoNotFoundException pnex) // Si usas tu excepción personalizada
+            // {
+            //     _logger.LogWarning(pnex, "Intento de eliminar producto no encontrado con ID: {ProductId}", id);
+            //     return NotFound(new { message = pnex.Message });
+            // }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Ocurrió un error al intentar eliminar el producto: {ex.Message}" });
+            }
+        }
 
 
 
