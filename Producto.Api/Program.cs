@@ -1,14 +1,14 @@
-using System.Reflection;
+ï»¿using System.Reflection;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 using Microsoft.OpenApi.Models;
 using Producto.Application.Contracts.Persistence;
 using Producto.Domain.Repositories;
-using Producto.Infrastructure.EventBus.Consumer; // Asegúrate que este namespace sea donde está ProductoCreadoEventConsumerService
+using Producto.Infrastructure.EventBus.Consumer; // Asegï¿½rate que este namespace sea donde estï¿½ ProductoCreadoEventConsumerService
 using Producto.Infrastructure.EventBus.Events;
 using Producto.Infrastructure.Persistance.DataBase; // Para MongoInitializer
-using Producto.Infrastructure.Persistance;       // Para AppDbContext
+using Producto.Infrastructure.Persistance;         // Para AppDbContext
 using Producto.Infrastructure.Persistance.Repositories;
 using Producto.Application.Handlers;
 
@@ -22,7 +22,7 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Microservicio Producto", Version = "v1" });
 });
 
-// Registrar autenticación y autorización
+// Registrar autenticaciï¿½n y autorizaciï¿½n
 builder.Services.AddAuthorization();
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateProductoCommandHandler).Assembly));
@@ -43,16 +43,16 @@ builder.Services.AddSingleton<IMongoDatabase>(sp =>
     return mongoClient.GetDatabase("productos_db");
 });
 
-// Registrar MongoInitializer como Singleton (la ejecución se hará después de app.Build())
+// Registrar MongoInitializer como Singleton (la ejecuciï¿½n se harï¿½ despuï¿½s de app.Build())
 builder.Services.AddSingleton<MongoInitializer>();
 
-// Obtener configuración de RabbitMQ
+// Obtener configuraciï¿½n de RabbitMQ
 var rabbitHost = builder.Configuration["RabbitMQ:Host"]
-    ?? throw new InvalidOperationException("Falta la configuración RabbitMQ:Host");
+    ?? throw new InvalidOperationException("Falta la configuraciï¿½n RabbitMQ:Host");
 var rabbitUser = builder.Configuration["RabbitMQ:Username"]
-    ?? throw new InvalidOperationException("Falta la configuración RabbitMQ:Username");
+    ?? throw new InvalidOperationException("Falta la configuraciï¿½n RabbitMQ:Username");
 var rabbitPass = builder.Configuration["RabbitMQ:Password"]
-    ?? throw new InvalidOperationException("Falta la configuración RabbitMQ:Password");
+    ?? throw new InvalidOperationException("Falta la configuraciï¿½n RabbitMQ:Password");
 
 // Configurar RabbitMQ Producer (IEventPublisher)
 builder.Services.AddSingleton<IEventPublisher, RabbitMQEventPublisher>(sp =>
@@ -70,7 +70,7 @@ builder.Services.AddSingleton<IHostedService>(sp =>
 
 builder.Services.AddSingleton<IHostedService>(sp =>
     new ProductoActualizadoEventConsumer(
-        new RabbitMQEventConsumerConnection(rabbitHost, rabbitUser, rabbitPass), // Se crea aquí
+        new RabbitMQEventConsumerConnection(rabbitHost, rabbitUser, rabbitPass), // Se crea aquï¿½
         sp.GetRequiredService<IServiceProvider>()
     // , sp.GetRequiredService<ILogger<ProductoActualizadoEventConsumer>>() // Si usas logger
     )
@@ -84,43 +84,37 @@ builder.Services.AddSingleton<IHostedService>(sp =>
     )
 );
 
+
+
+
 // Registro de repositorios
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<IProductReadRepository, ProductReadRepository>();
 
 // Registro de operaciones de MongoDB
 builder.Services.AddScoped<Producto.Infrastructure.Persistance.MongoOperations.MongoCreateProducto>();
-builder.Services.AddScoped<Producto.Infrastructure.Persistence.MongoOperations.MongoUpdateProducto>(); // Corregido el namespace si es necesario
-builder.Services.AddScoped<Producto.Infrastructure.Persistence.MongoOperations.MongoDeleteProducto>(); // Corregido el namespace si es necesario
+builder.Services.AddScoped<Producto.Infrastructure.Persistence.MongoOperations.MongoUpdateProducto>();
+builder.Services.AddScoped<Producto.Infrastructure.Persistence.MongoOperations.MongoDeleteProducto>();
 
 
 var app = builder.Build();
 
 // Middleware pipeline
-// Swagger habilitado para todos los entornos
-app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Producto API v1");
-    // Para acceder a Swagger UI desde la raíz en producción (opcional):
-    // c.RoutePrefix = string.Empty;
-});
-
-// Condición original para otros middlewares de desarrollo (si los hubiera)
+// Considera volver a poner la condiciï¿½n si solo quieres Swagger en Desarrollo
 if (app.Environment.IsDevelopment())
 {
-    // Aquí irían otros middlewares específicos de desarrollo si los tienes
-    // Ejemplo: app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Producto API v1");
+    });
 }
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
-// Endpoint de Hola Mundo de prueba
-app.MapGet("/holamundo", () => "Hola Mundo!");
-
-// Inicialización de MongoDB (Lugar correcto para ejecutarla)
+// Inicializaciï¿½n de MongoDB (Lugar correcto para ejecutarla)
 using (var scope = app.Services.CreateScope())
 {
     var mongoInitializer = scope.ServiceProvider.GetRequiredService<MongoInitializer>();

@@ -104,30 +104,6 @@ namespace Producto.Presentation.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllProducts()
-        {
-            try
-            {
-                Console.WriteLine("[ProductosController] Solicitud recibida para GET api/productos");
-                var command = new GetProductsCommand();
-                IEnumerable<Product> result = await _mediator.Send(command);
-
-                if (result == null || !result.Any())
-                {
-                    Console.WriteLine("[ProductosController] No se encontraron productos para devolver.");
-                    return Ok(new List<Product>());
-                }
-
-                Console.WriteLine($"[ProductosController] Devolviendo {result.Count()} entidades Product.");
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ProductosController] ERROR: {ex.Message}");
-                return StatusCode(500, new { message = "Ocurrió un error al procesar la solicitud." });
-            }
-        }
 
 
 
