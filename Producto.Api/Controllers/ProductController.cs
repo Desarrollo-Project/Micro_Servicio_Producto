@@ -37,7 +37,43 @@ namespace Producto.Presentation.Controllers
             }
         }
 
-        
+        // --- NUEVO ENDPOINT PARA ACTUALIZAR PRODUCTO ---
+        [HttpPut("{id}")] // Ruta: PUT api/productos/{id}
+        public async Task<IActionResult> UpdateProduct([FromRoute] Guid id, [FromBody] UpdateProductoDTO dto)
+        {
+            try
+            {
+                // Es una buena práctica asegurarse de que el ID en la ruta coincida con el ID en el DTO,
+                // o que el ID del DTO se establezca a partir del ID de la ruta para evitar confusiones.
+                // Aquí, haremos que el ID de la ruta sea el autoritativo.
+                if (dto.Id != Guid.Empty && dto.Id != id)
+                {
+                    return BadRequest(new { message = "El ID del producto en la URL no coincide con el ID en el cuerpo de la solicitud." });
+                }
+
+                // Aseguramos que el DTO que va al comando tenga el ID correcto (el de la ruta).
+                dto.Id = id;
+
+                var command = new UpdateProductCommand(dto);
+                await _mediator.Send(command);
+
+                // HTTP 204 No Content es una respuesta común y apropiada para una actualización exitosa
+                // si no se devuelve el contenido actualizado.
+                return NoContent();
+
+            }
+            catch (KeyNotFoundException knfex) // Excepción específica para "no encontrado"
+            {
+                return NotFound(new { message = knfex.Message });
+            }
+            catch (Exception ex) // Otras excepciones (ej. validación fallida desde el dominio/VOs)
+            {
+                // Podrías tener un manejo más granular aquí para distintos tipos de excepciones.
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+
 
 
 
