@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Producto.Domain.Excepciones;
 
 namespace Producto.Infrastructure.Persistance.Repositories
 {
@@ -22,7 +23,7 @@ namespace Producto.Infrastructure.Persistance.Repositories
 
             string collectionName = "productos"; 
             _productosReadCollection = mongoDatabase.GetCollection<ProductMongo>(collectionName);
-            Console.WriteLine($"[ProductReadRepository-Mongo] Conectado a la colección MongoDB: {collectionName}");
+          
         }
 
         public async Task<IEnumerable<Product>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -43,7 +44,9 @@ namespace Producto.Infrastructure.Persistance.Repositories
                 pMongo.Nombre,    
                 pMongo.PrecioBase,  
                 pMongo.Categoria, 
-                pMongo.ImagenUrl  
+                pMongo.ImagenUrl,
+                pMongo.Estado,
+                pMongo.Id_Usuario
             )).ToList();
 
             Console.WriteLine($"[ProductReadRepository-Mongo] Se encontraron y mapearon {productos.Count} productos a agregados Product.");
@@ -68,11 +71,23 @@ namespace Producto.Infrastructure.Persistance.Repositories
                 productoMongo.Nombre,
                 productoMongo.PrecioBase,
                 productoMongo.Categoria,
-                productoMongo.ImagenUrl
+                productoMongo.ImagenUrl,
+                productoMongo.Estado,
+                productoMongo.Id_Usuario
             );
 
             Console.WriteLine($"[ProductReadRepository-Mongo] Producto con ID: {id} encontrado y mapeado a agregado Product.");
             return producto;
+        }
+
+        public async Task<String> Obtener_Url_Producto(Guid guid_Usuario)
+        {
+
+            var filtro = Builders<ProductMongo>.Filter.Eq(p => p.Id, guid_Usuario);
+
+            var producto = await _productosReadCollection.Find(filtro).FirstOrDefaultAsync();
+
+            return producto.ImagenUrl;
         }
     }
 }

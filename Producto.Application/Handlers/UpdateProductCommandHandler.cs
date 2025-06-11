@@ -37,8 +37,6 @@ namespace Producto.Application.Handlers
 
             if (producto == null)
             {
-                // Considerar crear una excepción personalizada, por ejemplo: ProductoNotFoundException
-                // o una excepción estándar como KeyNotFoundException.
                 throw new KeyNotFoundException($"Producto con ID {dto.Id} no encontrado.");
             }
 
@@ -47,7 +45,9 @@ namespace Producto.Application.Handlers
                 dto.Nombre,
                 dto.PrecioBase,
                 dto.Categoria,
-                dto.ImagenUrl
+                dto.ImagenUrl,
+                dto.Estado,
+                dto.Id_Usuario
             );
 
             // 3. Persistir los cambios en la base de datos
@@ -57,17 +57,15 @@ namespace Producto.Application.Handlers
             var productoActualizadoEvent = new ProductoActualizadoEvent
             {
                 Id = producto.Id,
-                Nombre = producto.Nombre.Valor, // Accediendo al valor del VO
-                PrecioBase = producto.PrecioBase.Valor, // Accediendo al valor del VO
-                Categoria = producto.Categoria.Valor, // Accediendo al valor del VO
-                ImagenUrl = producto.ImagenUrl.Valor  // Accediendo al valor del VO
+                Nombre = producto.Nombre.Valor,
+                PrecioBase = producto.PrecioBase.Valor, 
+                Categoria = producto.Categoria.Valor,
+                ImagenUrl = producto.ImagenUrl.Valor,
+                Estado = producto.Estado.Valor,
+                Id_Usuario = producto.Id_Usuario.Valor
             };
 
-            // Publicar el evento a través del bus de eventos externo (ej. RabbitMQ)
-            // Ajusta el routingKey según tus necesidades.
             _eventPublisher.Publish(productoActualizadoEvent, "productos_exchange", "producto.actualizado");
-
-            // Publicar el evento internamente a través de MediatR
             await _mediator.Publish(productoActualizadoEvent, cancellationToken);
         }
     }

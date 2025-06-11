@@ -60,8 +60,6 @@ namespace Producto.Infrastructure.EventBus.Consumer
             }, stoppingToken);
         }
 
-        // Método 'internal' para facilitar las pruebas y mantener la lógica de manejo de mensajes aquí.
-        // Este método ahora es el callback para IEventConsumerConnection.
         internal async Task<bool> HandleMessageAsync(BasicDeliverEventArgs ea)
         {
             var body = ea.Body.ToArray();
@@ -81,8 +79,6 @@ namespace Producto.Infrastructure.EventBus.Consumer
                 return true; // Indica a RabbitMQEventConsumerConnection que haga ACK para mensajes irrelevantes para este consumidor.
             }
         }
-
-        // Lógica de procesamiento específica, ahora 'internal' y retorna bool para ACK/NACK
         internal async Task<bool> ProcessProductoActualizadoEventLogic(string message)
         {
             Console.WriteLine("[ProductoActualizadoEventConsumer] Procesando ProductoActualizadoEvent...");

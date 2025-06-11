@@ -16,10 +16,13 @@ namespace Producto.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id_Usuario = table.Column<string>(type: "text", nullable: false),
                     Nombre = table.Column<string>(type: "text", nullable: false),
                     PrecioBase = table.Column<decimal>(type: "numeric", nullable: false),
                     Categoria = table.Column<string>(type: "text", nullable: false),
-                    ImagenUrl = table.Column<string>(type: "text", nullable: false)
+                    ImagenUrl = table.Column<string>(type: "text", nullable: false),
+                    Estado = table.Column<string>(type: "text", nullable: false)
+
                 },
                 constraints: table =>
                 {

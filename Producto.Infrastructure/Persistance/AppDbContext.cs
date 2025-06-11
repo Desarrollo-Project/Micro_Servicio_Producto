@@ -53,6 +53,16 @@ namespace Producto.Infrastructure.Persistance
                     v => v.Valor,
                     v => new ImagenUrlVo(v)
                 );
+
+            modelBuilder.Entity<Product>()
+                .Property(p => p.Estado)
+                .HasConversion(v => v.Valor, v => new EstadoVO(v));
+
+            modelBuilder.Entity<Product>().Property(p => p.Id_Usuario)
+                .HasConversion(v => v.Valor, v => new Id_Usuario_VO(v));
+
+
         }
     }
+
 }

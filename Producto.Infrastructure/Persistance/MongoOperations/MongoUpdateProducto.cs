@@ -40,7 +40,9 @@ namespace Producto.Infrastructure.Persistence.MongoOperations
                     Nombre = new NombreProductoVO(evento.Nombre),
                     PrecioBase = new PrecioBaseVO(evento.PrecioBase),
                     Categoria = new CategoriaVO(evento.Categoria),
-                    ImagenUrl = new ImagenUrlVo(evento.ImagenUrl)
+                    ImagenUrl = new ImagenUrlVo(evento.ImagenUrl),
+                    Estado = new EstadoVO(evento.Estado),
+                    Id_Usuario = evento.Id_Usuario
                 };
 
                 var result = await _productosCollection.ReplaceOneAsync(filter, productoMongoActualizado, new ReplaceOptions { IsUpsert = true });

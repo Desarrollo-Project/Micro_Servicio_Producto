@@ -4,20 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Producto.Domain.VO;
 
 namespace Producto.Application.DTO
 {
-    public class CreateProductoDTO
+    public class Get_Productos_DTO
     {
         public string Nombre { get; set; } = default;
         public decimal PrecioBase { get; set; }
         public string Categoria { get; set; } = default;
-        public string? ImagenUrl { get; set; } 
+        public string? ImagenUrl { get; set; }
         public IFormFile IForm { get; set; } = default;
         public string Estado { get; set; } = default;
-        public string Id_Usuario { get; set; } = default;
+        public Guid Id_Usuario { get; set; } = default;
 
     }
-
 }

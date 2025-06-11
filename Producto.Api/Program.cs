@@ -11,6 +11,8 @@ using Producto.Infrastructure.Persistance.DataBase; // Para MongoInitializer
 using Producto.Infrastructure.Persistance;       // Para AppDbContext
 using Producto.Infrastructure.Persistance.Repositories;
 using Producto.Application.Handlers;
+using CloudinaryDotNet;
+using Producto.Infrastructure.Cloud_Dinary_Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,52 +48,82 @@ builder.Services.AddSingleton<IMongoDatabase>(sp =>
 // Registrar MongoInitializer como Singleton (la ejecución se hará después de app.Build())
 builder.Services.AddSingleton<MongoInitializer>();
 
-// Obtener configuración de RabbitMQ
-var rabbitHost = builder.Configuration["RabbitMQ:Host"]
-    ?? throw new InvalidOperationException("Falta la configuración RabbitMQ:Host");
-var rabbitUser = builder.Configuration["RabbitMQ:Username"]
-    ?? throw new InvalidOperationException("Falta la configuración RabbitMQ:Username");
-var rabbitPass = builder.Configuration["RabbitMQ:Password"]
-    ?? throw new InvalidOperationException("Falta la configuración RabbitMQ:Password");
+// 
+builder.Services.AddScoped<I_Servicio_Imagen, Servicio_Imagen>();
+builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
+builder.Services.AddScoped<IProductReadRepository, ProductReadRepository>();
+
+builder.Services.AddSingleton<IProductReadRepository, ProductReadRepository>(sp =>
+{
+    var mongoDatabase = sp.GetRequiredService<IMongoDatabase>();
+    return new ProductReadRepository(mongoDatabase);
+});
+
+
+// Configuración de RabbitMQ
+
+/* HACER EXCEPCIONES PERSONALIZADAS */
+
+var rabbitHost = builder.Configuration["RabbitMQ:Host"];
+    //?? throw new InvalidOperationException("Falta la configuración RabbitMQ:Host");
+
+    var rabbitUser = builder.Configuration["RabbitMQ:Username"];
+   // ?? throw new InvalidOperationException("Falta la configuración RabbitMQ:Username");
+
+   var rabbitPass = builder.Configuration["RabbitMQ:Password"];
+
+   // ?? throw new InvalidOperationException("Falta la configuración RabbitMQ:Password");
 
 // Configurar RabbitMQ Producer (IEventPublisher)
 builder.Services.AddSingleton<IEventPublisher, RabbitMQEventPublisher>(sp =>
     new RabbitMQEventPublisher(rabbitHost, rabbitUser, rabbitPass) // Limpio
 );
 
-/* Registro de Consumidores  */
+
+// Configuracion necesaria para CLoudDInary
+builder.Services.AddSingleton<CloudinaryDotNet.Cloudinary>(provider => {
+    var config = provider.GetRequiredService<IConfiguration>();
+    var account = new Account(
+        config["ClouDinary:Cloud_Name"],
+        config["ClouDinary:Api_Key"],
+        config["ClouDinary:Api_Secret"]
+    );
+    return new CloudinaryDotNet.Cloudinary(account);
+});
+
+
+
+// Configuracion para el consumidor de ProductoCreado 
 builder.Services.AddSingleton<IHostedService>(sp =>
     new ProductoCreadoEventConsumer( // El consumidor que acabamos de ajustar
         new RabbitMQEventConsumerConnection(rabbitHost, rabbitUser, rabbitPass),
         sp.GetRequiredService<IServiceProvider>()
-    // , sp.GetRequiredService<ILogger<ProductoCreadoEventConsumerService>>() // Si usas logger
     )
 );
 
+// Configuracion para el consumidor de ProductoActualizadoEvent 
 builder.Services.AddSingleton<IHostedService>(sp =>
     new ProductoActualizadoEventConsumer(
         new RabbitMQEventConsumerConnection(rabbitHost, rabbitUser, rabbitPass), // Se crea aquí
         sp.GetRequiredService<IServiceProvider>()
-    // , sp.GetRequiredService<ILogger<ProductoActualizadoEventConsumer>>() // Si usas logger
     )
 );
 
+// Configuracion para  el consumidor de Producto eliminado 
 builder.Services.AddSingleton<IHostedService>(sp =>
     new ProductoEliminadoEventConsumer(
-        new RabbitMQEventConsumerConnection(rabbitHost, rabbitUser, rabbitPass), // Se crea una nueva instancia para este consumidor
+        new RabbitMQEventConsumerConnection(rabbitHost, rabbitUser, rabbitPass), 
         sp.GetRequiredService<IServiceProvider>()
-    // , sp.GetRequiredService<ILogger<ProductoEliminadoEventConsumerService>>() // Si usas logger
+    
     )
 );
 
 // Registro de repositorios
-builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
-builder.Services.AddScoped<IProductReadRepository, ProductReadRepository>();
 
 // Registro de operaciones de MongoDB
 builder.Services.AddScoped<Producto.Infrastructure.Persistance.MongoOperations.MongoCreateProducto>();
-builder.Services.AddScoped<Producto.Infrastructure.Persistence.MongoOperations.MongoUpdateProducto>(); // Corregido el namespace si es necesario
-builder.Services.AddScoped<Producto.Infrastructure.Persistence.MongoOperations.MongoDeleteProducto>(); // Corregido el namespace si es necesario
+builder.Services.AddScoped<Producto.Infrastructure.Persistence.MongoOperations.MongoUpdateProducto>(); 
+builder.Services.AddScoped<Producto.Infrastructure.Persistence.MongoOperations.MongoDeleteProducto>(); 
 
 
 var app = builder.Build();

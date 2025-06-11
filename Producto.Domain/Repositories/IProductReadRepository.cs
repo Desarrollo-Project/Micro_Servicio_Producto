@@ -12,6 +12,7 @@ namespace Producto.Application.Contracts.Persistence // O el namespace que elija
     {
         Task<IEnumerable<Product>> GetAllAsync(CancellationToken cancellationToken = default);
         Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default); // Para la consulta por ID que mencionaste antes
-        // Puedes añadir más métodos aquí para otras consultas, ej. por categoría, etc.
+
+        Task<String> Obtener_Url_Producto(Guid guid_Usuario);
     }
 }

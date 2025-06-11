@@ -42,7 +42,10 @@ namespace Producto.Application.Handlers
                 new NombreProductoVO(dto.Nombre),
                 new PrecioBaseVO(dto.PrecioBase),
                 new CategoriaVO(dto.Categoria),
-                new ImagenUrlVo(dto.ImagenUrl)
+                new ImagenUrlVo(dto.ImagenUrl),
+                new EstadoVO(dto.Estado),
+                new Id_Usuario_VO(dto.Id_Usuario)
+
             );
 
 
@@ -54,7 +57,11 @@ namespace Producto.Application.Handlers
                 producto.Nombre.Valor,
                 producto.PrecioBase.Valor,
                 producto.Categoria.Valor,
-                producto.ImagenUrl.Valor
+                producto.ImagenUrl.Valor,
+                producto.Estado.Valor,
+                producto.Id_Usuario.Valor
+
+
             );
 
             // Publicar el evento en RabbitMQ

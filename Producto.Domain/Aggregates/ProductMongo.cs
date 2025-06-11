@@ -18,6 +18,9 @@ namespace Producto.Domain.Aggregates
         public PrecioBaseVO? PrecioBase { get; set; }
         public CategoriaVO? Categoria { get; set; }
         public ImagenUrlVo? ImagenUrl { get; set; }
+        public EstadoVO Estado { get;  set; }
+        public Id_Usuario_VO Id_Usuario { get; set; }
+
 
     }
 

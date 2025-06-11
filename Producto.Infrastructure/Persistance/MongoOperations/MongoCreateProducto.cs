@@ -40,7 +40,10 @@ namespace Producto.Infrastructure.Persistance.MongoOperations
                     Nombre = new NombreProductoVO(evento.Nombre),
                     PrecioBase = new PrecioBaseVO(evento.PrecioBase),
                     Categoria = new CategoriaVO(evento.Categoria),
-                    ImagenUrl = new ImagenUrlVo(evento.ImagenUrl)
+                    ImagenUrl = new ImagenUrlVo(evento.ImagenUrl),
+                    Estado = new EstadoVO(evento.Estado),
+                    Id_Usuario = new Id_Usuario_VO(evento.Id_Usuario)
+
                 };
 
                 await _productosCollection.InsertOneAsync(productoMongo);

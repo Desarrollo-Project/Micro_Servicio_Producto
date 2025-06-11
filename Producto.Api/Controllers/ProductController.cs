@@ -5,7 +5,10 @@ using Producto.Application.DTO;
 using System; // Para ArgumentNullException y Exception
 using System.Threading.Tasks; // Para Task
 using System.Collections.Generic;
-using Producto.Domain.Aggregates; // Para KeyNotFoundException (si no está ya importado)
+using Producto.Application.Contracts.Persistence;
+using Producto.Domain.Aggregates;
+using Producto.Domain.Repositories; 
+using Producto.Domain.Excepciones; 
 
 namespace Producto.Presentation.Controllers
 {
@@ -14,21 +17,26 @@ namespace Producto.Presentation.Controllers
     public class ProductosController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly I_Servicio_Imagen _servicioImagen;
+        private readonly IProductReadRepository _productReadRepository;
 
-        public ProductosController(IMediator mediator)
+        public ProductosController(IMediator mediator,I_Servicio_Imagen servicioImagen, IProductReadRepository productReadRepository)
         {
-            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+            _mediator = mediator;
+            _servicioImagen = servicioImagen;
+            _productReadRepository = productReadRepository;
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateProduct([FromBody] CreateProductoDTO dto)
+        public async Task<IActionResult> CreateProduct([FromForm] CreateProductoDTO dto)
         {
             try
             {
+                var Url = _servicioImagen.Cargar_Imagen(dto.IForm);
+                dto.ImagenUrl = await Url; // Asignar la URL de la imagen cargada al DTO
                 var command = new CreateProductCommand(dto); // Creamos el comando con el DTO
                 var productId = await _mediator.Send(command);
-                // Devuelve 201 Created con la ubicación del nuevo recurso y el ID.
-                // Idealmente, nameof(GetProductById) si tienes un endpoint GET para obtener el producto.
+
                 return CreatedAtAction(nameof(CreateProduct), new { id = productId }, new { id = productId });
             }
             catch (Exception ex) // Considera manejar excepciones de validación de forma más específica si es necesario
@@ -37,28 +45,20 @@ namespace Producto.Presentation.Controllers
             }
         }
 
-        // --- NUEVO ENDPOINT PARA ACTUALIZAR PRODUCTO ---
-        [HttpPut("{id}")] // Ruta: PUT api/productos/{id}
+        [HttpPut("Actualizar/{id:guid}")] 
         public async Task<IActionResult> UpdateProduct([FromRoute] Guid id, [FromBody] UpdateProductoDTO dto)
         {
             try
             {
-                // Es una buena práctica asegurarse de que el ID en la ruta coincida con el ID en el DTO,
-                // o que el ID del DTO se establezca a partir del ID de la ruta para evitar confusiones.
-                // Aquí, haremos que el ID de la ruta sea el autoritativo.
                 if (dto.Id != Guid.Empty && dto.Id != id)
                 {
                     return BadRequest(new { message = "El ID del producto en la URL no coincide con el ID en el cuerpo de la solicitud." });
                 }
 
-                // Aseguramos que el DTO que va al comando tenga el ID correcto (el de la ruta).
                 dto.Id = id;
 
                 var command = new UpdateProductCommand(dto);
                 await _mediator.Send(command);
-
-                // HTTP 204 No Content es una respuesta común y apropiada para una actualización exitosa
-                // si no se devuelve el contenido actualizado.
                 return NoContent();
 
             }
@@ -80,30 +80,32 @@ namespace Producto.Presentation.Controllers
             {
                 if (id == Guid.Empty)
                 {
-                    return BadRequest(new { message = "El ID del producto proporcionado no es válido." });
+                    throw new Excepcion_Guid_Invalido("El GUID no puede ser vacio");
                 }
 
-                var command = new DeleteProductCommand(id);
-                await _mediator.Send(command);
+                //var url_Producto = _productReadRepository.Obtener_Url_Producto(id);
+                //this._servicioImagen.Eliminar_Imagen(null);
 
-                // HTTP 204 No Content es la respuesta estándar para una eliminación exitosa.
+
+                var command = new DeleteProductCommand(id);
+                 await _mediator.Send(command);
+
+                // Deberia retornar RESPONSE 204 que es el tipico para la eliminacion
                 return NoContent();
             }
             catch (KeyNotFoundException knfex) // Captura la excepción si el producto no se encontró
             {
                 return NotFound(new { message = knfex.Message });
             }
-            // catch (ProductoNotFoundException pnex) // Si usas tu excepción personalizada
-            // {
-            //     _logger.LogWarning(pnex, "Intento de eliminar producto no encontrado con ID: {ProductId}", id);
-            //     return NotFound(new { message = pnex.Message });
-            // }
             catch (Exception ex)
             {
                 return BadRequest(new { message = $"Ocurrió un error al intentar eliminar el producto: {ex.Message}" });
             }
         }
 
+        
+        
+        // Get Para Productos 
         [HttpGet]
         public async Task<IActionResult> GetAllProducts()
         {

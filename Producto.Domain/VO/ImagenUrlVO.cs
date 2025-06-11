@@ -12,8 +12,6 @@ namespace Producto.Domain.VO
 
         public ImagenUrlVo(string valor)
         {
-            if (!Uri.IsWellFormedUriString(valor, UriKind.Absolute))
-                throw new ArgumentException("La URL de la imagen no es válida.");
             Valor = valor;
         }
 

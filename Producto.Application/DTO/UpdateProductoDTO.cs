@@ -13,5 +13,7 @@ namespace Producto.Application.DTO
         public decimal PrecioBase { get; set; }
         public string Categoria { get; set; } = default!;
         public string ImagenUrl { get; set; } = default!;
+        public string Estado { get; set; }
+        public string Id_Usuario { get; set; }
     }
 }
